@@ -5,7 +5,7 @@ using TMPro;
 public class InputCodeManager : MonoBehaviour
 {
     [Header("Kod")]
-    public string correctCode = "123456";
+    public string correctCode = "";
     private string currentInput = "";
     public int maxDigits = 6;
 
@@ -15,6 +15,7 @@ public class InputCodeManager : MonoBehaviour
     public Button[] numberButtons;
     public Button clearButton;
     public Button enterButton;
+    public Button cancelButton; // YANGI: Paneldan chiqish (X yoki Back) tugmasi
 
     [Header("Bog'liq tizimlar")]
     public ScreamerController screamer;
@@ -26,11 +27,54 @@ public class InputCodeManager : MonoBehaviour
         for (int i = 0; i < numberButtons.Length; i++)
         {
             int digit = i;
+            numberButtons[i].onClick.RemoveAllListeners();
             numberButtons[i].onClick.AddListener(() => AddDigit(digit));
         }
 
-        clearButton.onClick.AddListener(ClearInput);
-        enterButton.onClick.AddListener(SubmitCode);
+        if (clearButton != null)
+        {
+            clearButton.onClick.RemoveAllListeners();
+            clearButton.onClick.AddListener(ClearInput);
+        }
+
+        if (enterButton != null)
+        {
+            enterButton.onClick.RemoveAllListeners();
+            enterButton.onClick.AddListener(SubmitCode);
+        }
+
+        // YANGI: Bekor qilish tugmasiga listener ulaymiz
+        if (cancelButton != null)
+        {
+            cancelButton.onClick.RemoveAllListeners();
+            cancelButton.onClick.AddListener(ClosePanel);
+        }
+    }
+
+    private void Update()
+    {
+        // YANGI: Panel ochiq bo'lganida ESC tugmasi bosilsa panelni yopamiz
+        if (codePanel != null && codePanel.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ClosePanel();
+            }
+        }
+    }
+
+    public void SetNewCode(string newCode)
+    {
+        correctCode = newCode;
+        if (ObjectiveUIManager.Instance != null)
+        {
+            ObjectiveUIManager.Instance.SetPosterCode(correctCode);
+        }
+    }
+
+    private void OnEnable()
+    {
+        ClearInput();
     }
 
     public void AddDigit(int digit)
@@ -48,21 +92,32 @@ public class InputCodeManager : MonoBehaviour
 
     void UpdateDisplay()
     {
-        codeText.text = currentInput;
+        if (codeText != null)
+        {
+            codeText.text = currentInput;
+        }
     }
 
     public void SubmitCode()
     {
         if (currentInput == correctCode)
+        {
             OnCorrectCode();
+        }
         else
+        {
             OnWrongCode();
+        }
     }
 
     void OnCorrectCode()
     {
         ClosePanel();
-        GameManager.Instance.OnPanel01Activated();
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnPanel01Activated();
+        }
     }
 
     void OnWrongCode()
@@ -71,12 +126,21 @@ public class InputCodeManager : MonoBehaviour
         ClearInput();
 
         if (screamer != null)
+        {
             screamer.TriggerScreamer(wrongAttempts);
+        }
     }
 
+    // Panelni yopish va o'yinchiga harakatlanish imkonini qaytarish
     public void ClosePanel()
     {
-        codePanel.SetActive(false);
+        if (codePanel != null)
+        {
+            codePanel.SetActive(false);
+        }
+
+        ClearInput(); // Har ehtimolga qarshi yopilganda kiritilgan chala raqamlar tozalanadi
+
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
