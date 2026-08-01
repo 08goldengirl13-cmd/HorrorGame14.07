@@ -13,7 +13,8 @@ public class GameManager : MonoBehaviour
         Panel01Active,
         Panel02Active,
         HasKeycard,
-        Escaped
+        Escaped,
+        Died
     }
 
     public GameStep currentStep = GameStep.FindExit;
