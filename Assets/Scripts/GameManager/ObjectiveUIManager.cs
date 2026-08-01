@@ -7,14 +7,12 @@ public class ObjectiveUIManager : MonoBehaviour
     public static ObjectiveUIManager Instance;
 
     [Header("Panels")]
-    public GameObject exitTriggerPanel;
     public GameObject interactionPanel;
     public GameObject generatorPanel;
     public GameObject reminderPanel;
     public GameObject posterPanel;
 
     [Header("Texts")]
-    public TMP_Text exitTriggerText;
     public TMP_Text interactionText;
     public TMP_Text generatorText;
     public TMP_Text reminderText;
@@ -42,36 +40,13 @@ public class ObjectiveUIManager : MonoBehaviour
     private void Start()
     {
         // O'yin boshida hamma panellarni yopamiz
-        if (exitTriggerPanel != null) exitTriggerPanel.SetActive(false);
         if (interactionPanel != null) interactionPanel.SetActive(false);
         if (generatorPanel != null) generatorPanel.SetActive(false);
         if (reminderPanel != null) reminderPanel.SetActive(false);
         if (posterPanel != null) posterPanel.SetActive(false);
     }
 
-    #region Exit & Main Objective Panel
-    public void ShowExitObjective(string message)
-    {
-        if (exitTriggerPanel != null) exitTriggerPanel.SetActive(true);
-        if (typingRoutine != null)
-            StopCoroutine(typingRoutine);
-        typingRoutine = StartCoroutine(TypeMessage(exitTriggerText, message));
-    }
 
-    public void HideExitObjective()
-    {
-        if (exitTriggerPanel != null) exitTriggerPanel.SetActive(false);
-        if (typingRoutine != null)
-        {
-            StopCoroutine(typingRoutine);
-            typingRoutine = null;
-        }
-        if (typingAudio != null && typingAudio.isPlaying)
-        {
-            typingAudio.Stop();
-        }
-    }
-    #endregion
 
     #region Interaction (E tugmasi)
     public void ShowInteraction(string action)

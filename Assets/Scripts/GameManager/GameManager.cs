@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null) Instance = this;
     }
 
-    private void Start()
+    public void StartGameObjectives()
     {
         ObjectiveUIManager.Instance.SetReminder("Objective: Find a way out of the mine.");
     }
@@ -39,17 +39,6 @@ public class GameManager : MonoBehaviour
         {
             currentStep = GameStep.BlockedExitSeen;
 
-            string mainTaskText = "EXIT BLOCKED\n\n" +
-                                  "The exit is blocked by fallen rocks.\n" +
-                                  "To escape the mine, you must open the emergency exit.\n\n" +
-                                  "Tasks:\n" +
-                                  "1. Start the Generator\n" +
-                                  "2. Activate Panel 01\n" +
-                                  "3. Activate Panel 02\n" +
-                                  "4. Find the Keycard\n" +
-                                  "5. Open the Exit Door and Escape";
-
-            ObjectiveUIManager.Instance.ShowExitObjective(mainTaskText);
             ObjectiveUIManager.Instance.SetReminder("Objective: Start the Generator.");
         }
     }
@@ -133,8 +122,11 @@ public class GameManager : MonoBehaviour
             ObjectiveUIManager.Instance.HideReminder();
             ObjectiveUIManager.Instance.HideInteraction();
 
-            // Ekranga g'alaba matnini chiqarish
-            ObjectiveUIManager.Instance.ShowExitObjective("YOU ESCAPED!\n\nYou survived the dark mine.");
+            // G'alaba menyusini ochish (Escaped paneli)
+            if (MenuManager.Instance != null)
+            {
+                MenuManager.Instance.ShowEscaped();
+            }
 
             // O'yin tugaganligi haqida konsolga xabar
             Debug.Log("Player has escaped successfully! Level Complete.");

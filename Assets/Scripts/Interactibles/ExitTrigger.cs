@@ -14,7 +14,7 @@ public class ExitTrigger : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            ObjectiveUIManager.Instance.HideExitObjective();
+            // O'chirilgan
         }
     }
 }

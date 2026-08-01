@@ -28,6 +28,7 @@ public class SudokuManager : MonoBehaviour
     {
         GenerateNewPuzzle();
         SetupBoard();
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = true;
     }
 
     // ------------------- Tasodifiy 4x4 Sudoku generatsiyasi -------------------
@@ -217,8 +218,7 @@ public class SudokuManager : MonoBehaviour
             puzzleCanvas.SetActive(false);
 
         Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = false;
 
         if (GameManager.Instance != null)
         {

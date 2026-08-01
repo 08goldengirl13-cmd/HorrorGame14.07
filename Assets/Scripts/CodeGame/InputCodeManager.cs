@@ -75,6 +75,7 @@ public class InputCodeManager : MonoBehaviour
     private void OnEnable()
     {
         ClearInput();
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = true;
     }
 
     public void AddDigit(int digit)
@@ -142,7 +143,6 @@ public class InputCodeManager : MonoBehaviour
         ClearInput(); // Har ehtimolga qarshi yopilganda kiritilgan chala raqamlar tozalanadi
 
         Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = false;
     }
 }

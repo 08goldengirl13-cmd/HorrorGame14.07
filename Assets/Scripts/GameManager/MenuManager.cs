@@ -1,20 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// =====================================================================
-// MenuManager.cs
-// -----------------------------------------------------------------
-// Bu script "MenuManager" obyektiga qo'yiladi va barcha menyu
-// panellarini (MainMenuPanel, PauseMenu, YouDie, Escaped, GameMenu)
-// hamda ulardagi tugmalarni (Play, Quit, Resume va h.k.) boshqaradi.
-//
-// ISHLASH PRINSIPI:
-//  - Har doim faqat BITTA panel ko'rinadi, qolganlari o'chirilgan bo'ladi
-//  - Har bir "Show..." funksiyasi avval hammasini o'chiradi,
-//    keyin kerakli panelni yoqadi
-//  - Tugmalar Inspector'dagi OnClick() orqali shu funksiyalarni chaqiradi
-// =====================================================================
-
 public class MenuManager : MonoBehaviour
 {
     public static MenuManager Instance { get; private set; }
@@ -26,7 +12,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject escapedPanel;     // "Escaped"
     [SerializeField] private GameObject gameMenuPanel;    // "GameMenu" (o'yin ichidagi HUD)
 
-    // Hozir biror menyu ochiqmi yo'qmi - shu bo'yicha cursor holatini har freym tekshirib turamiz
+    public bool isPuzzleOpen = false;
     private bool isMenuCurrentlyOpen = true;
 
     private void Awake()
@@ -43,49 +29,38 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        // O'yin boshlanganda faqat asosiy menyu ko'rinadi
         ShowMainMenu();
     }
 
-    // LateUpdate barcha obyektlarning oddiy Update() funksiyalaridan KEYIN ishlaydi.
-    // Shuning uchun agar boshqa biror script (masalan PlayerMovement) o'zining
-    // Update()'ida Cursor.lockState'ni o'zgartirib qo'ysa ham, biz uni shu yerda
-    // har freym qaytadan to'g'rilab qo'yamiz - shunday qilib "kim g'olib chiqishi"
-    // haqidagi tasodifiy tortishuv butunlay yo'qoladi.
     private void LateUpdate()
     {
-        SetCursorState(isMenuCurrentlyOpen);
-    }
-
-    // ---------------------------------------------------------------
-    // SICHQONCHA (CURSOR) HOLATINI BOSHQARISH
-    // ---------------------------------------------------------------
-    // menuOpen = true  -> sichqoncha ko'rinadi va erkin harakatlanadi (tugmalarni bosish uchun)
-    // menuOpen = false -> sichqoncha yashiriladi va ekran markaziga qulflanadi (FPS kamera uchun)
-    private void SetCursorState(bool menuOpen)
-    {
-        isMenuCurrentlyOpen = menuOpen; // Holatni eslab qolamiz, LateUpdate shundan foydalanadi
-
-        if (menuOpen)
+        if (isPuzzleOpen)
         {
-            Cursor.lockState = CursorLockMode.None; // Erkin harakat
-            Cursor.visible = true;                  // Ko'rinadi
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
         else
         {
-            Cursor.lockState = CursorLockMode.Locked; // Ekran markaziga qulflanadi
-            Cursor.visible = false;                    // Yashiriladi
+            SetCursorState(isMenuCurrentlyOpen);
         }
     }
 
-    // ---------------------------------------------------------------
-    // PANELLARNI ALMASHTIRISH FUNKSIYALARI
-    // ---------------------------------------------------------------
+    private void SetCursorState(bool menuOpen)
+    {
+        isMenuCurrentlyOpen = menuOpen; 
 
-    // Barcha panellarni o'chirib qo'yuvchi yordamchi funksiya.
-    // "if (x != null)" tekshiruvi bor - shuning uchun agar biror
-    // panel Inspector'da hali ulanmagan bo'lsa ham xato chiqmaydi,
-    // faqat o'sha panel e'tiborsiz qoldiriladi.
+        if (menuOpen)
+        {
+            Cursor.lockState = CursorLockMode.None; 
+            Cursor.visible = true;                  
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked; 
+            Cursor.visible = false;                    
+        }
+    }
+
     private void CloseAllPanels()
     {
         if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
@@ -95,12 +70,25 @@ public class MenuManager : MonoBehaviour
         if (gameMenuPanel != null) gameMenuPanel.SetActive(false);
     }
 
+    private void ToggleObjectiveCanvas(bool show)
+    {
+        if (ObjectiveUIManager.Instance != null)
+        {
+            Canvas objCanvas = ObjectiveUIManager.Instance.GetComponent<Canvas>();
+            if (objCanvas != null)
+            {
+                objCanvas.enabled = show;
+            }
+        }
+    }
+
     public void ShowMainMenu()
     {
-        Time.timeScale = 1f; // Vaqtni me'yoriga qaytaramiz
+        Time.timeScale = 1f; 
         CloseAllPanels();
         if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
-        SetCursorState(true); // Menyu - sichqoncha ko'rinadi
+        SetCursorState(true); 
+        ToggleObjectiveCanvas(false);
     }
 
 
@@ -109,15 +97,17 @@ public class MenuManager : MonoBehaviour
         Time.timeScale = 1f;
         CloseAllPanels();
         if (gameMenuPanel != null) gameMenuPanel.SetActive(true);
-        SetCursorState(false); // O'yin ichida - sichqoncha yashirinadi va qulflanadi
+        SetCursorState(false); 
+        ToggleObjectiveCanvas(true);
     }
 
     public void ShowPauseMenu()
     {
-        Time.timeScale = 0f; // O'yinni to'xtatib turamiz
+        Time.timeScale = 0f; 
         CloseAllPanels();
         if (pauseMenuPanel != null) pauseMenuPanel.SetActive(true);
-        SetCursorState(true); // Menyu - sichqoncha ko'rinadi
+        SetCursorState(true); 
+        ToggleObjectiveCanvas(false);
     }
 
     public void ShowYouDie()
@@ -126,6 +116,7 @@ public class MenuManager : MonoBehaviour
         CloseAllPanels();
         if (youDiePanel != null) youDiePanel.SetActive(true);
         SetCursorState(true);
+        ToggleObjectiveCanvas(false);
     }
 
     public void ShowEscaped()
@@ -134,71 +125,53 @@ public class MenuManager : MonoBehaviour
         CloseAllPanels();
         if (escapedPanel != null) escapedPanel.SetActive(true);
         SetCursorState(true);
+        ToggleObjectiveCanvas(false);
     }
 
-    // ---------------------------------------------------------------
-    // TUGMALAR UCHUN FUNKSIYALAR (Inspector'da OnClick() ga ulanadi)
-    // ---------------------------------------------------------------
+    // === TUGMALAR UCHUN FUNKSIYALAR ===
 
-    // === MainMenuPanel ichidagi tugmalar ===
-
-    // "Play" tugmasi bosilganda
     public void PlayButton()
     {
-        ShowGameMenu(); // O'yin HUD paneli ko'rinadi, o'yin boshlanadi
+        ShowGameMenu(); 
+        
+        // O'yin boshlanganda vazifalarni ekranga chiqaramiz
+        if (GameManager.Instance != null && GameManager.Instance.currentStep == GameManager.GameStep.FindExit)
+        {
+            GameManager.Instance.StartGameObjectives();
+        }
     }
 
-    // "Quit" tugmasi bosilganda (MainMenuPanel ichida)
     public void QuitButton()
     {
         Debug.Log("O'yindan chiqildi!");
         Application.Quit();
 
 #if UNITY_EDITOR
-        // Unity Editor'da "Application.Quit()" ishlamaydi,
-        // shuning uchun Play rejimini shu qator to'xtatadi (faqat Editor uchun)
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
 
-    // === PauseMenu ichidagi tugmalar ===
-
-    // "ResumeButton" bosilganda - o'yinga qaytish
     public void ResumeButton()
     {
         ShowGameMenu();
     }
 
-    // === YouDie ichidagi tugmalar ===
-
-    // "RestartButton" bosilganda - sahnani qaytadan yuklaydi
     public void RestartButton()
     {
-        Time.timeScale = 1f; // Vaqtni tiklamasak, qayta yuklangan sahna ham to'xtab qoladi
+        Time.timeScale = 1f; 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // === Escaped ichidagi tugmalar ===
-
-    // "Countine" (Continue) tugmasi bosilganda
     public void ContinueButton()
     {
-        // Keyingi bosqich/level logikasi shu yerga yoziladi.
-        // Hozircha shunchaki o'yin menyusiga qaytaramiz:
         ShowGameMenu();
     }
 
-    // "QuiteButton" (Quit) - Escaped panelidagi chiqish tugmasi
-    // (yuqoridagi QuitButton() bilan bir xil ishlaydi, shuning uchun shunchaki uni chaqiramiz)
     public void QuiteButton()
     {
         QuitButton();
     }
 
-    // === Barcha panellarda takrorlanadigan umumiy tugma ===
-
-    // "MainMenuButton" - PauseMenu, YouDie, Escaped panellarining
-    // barchasida bor, hammasi shu bitta funksiyaga ulanadi
     public void MainMenuButton()
     {
         ShowMainMenu();
@@ -206,10 +179,12 @@ public class MenuManager : MonoBehaviour
 
     private void Update()
     {
-        // "P" tugmasi bosilganda pauza menyusini ochamiz
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
         {
-            ShowPauseMenu(); // Bu funksiya avtomatik ravishda o'yinni to'xtatadi va sichqonchani ko'rsatadi
+            if (!isMenuCurrentlyOpen && !isPuzzleOpen) 
+            {
+                ShowPauseMenu(); 
+            }
         }
     }
 }

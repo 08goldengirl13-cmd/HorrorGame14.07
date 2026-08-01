@@ -25,6 +25,7 @@ public class SlidePuzzleManager : MonoBehaviour
     private void OnEnable()
     {
         SetupPuzzle();
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = true;
     }
 
     private void SetupPuzzle()
@@ -120,8 +121,7 @@ public class SlidePuzzleManager : MonoBehaviour
 
         puzzleCanvas.SetActive(false);
         Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (MenuManager.Instance != null) MenuManager.Instance.isPuzzleOpen = false;
 
         GameManager.Instance.OnPanel01Activated();
     }
